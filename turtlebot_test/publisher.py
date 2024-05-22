@@ -5,7 +5,8 @@ node = nep.node("sender", "ROS")                 # Define node name
 conf = node.hybrid('10.105.95.233') 
 pub = node.new_pub("test_topic","json", conf)   # Define topic and type of message
 
-while True:
+while True:                                 
+
   # Here is your code doing something ...                    
   words = ['hello','world','!', 'I', 'am', 'a', 'robot']
   msg = {}
