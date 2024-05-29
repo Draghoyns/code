@@ -37,6 +37,7 @@ import time
 import sys, select, termios, tty
 
 IP = '10.105.95.233'    #IP of the remote PC
+msg_type = "dictionary"
 
 msg = """
 Control Your Turtlebot!
@@ -100,7 +101,9 @@ if __name__=="__main__":
 
     node = nep.node("turtlebot_teleop","ROS")
     conf = node.hybrid(IP) 
-    pub = node.new_pub("~cmd_vel",Twist,conf)
+    pub = node.new_pub("~cmd_vel",msg_type,conf) #error here ...
+
+    message = {}
 
     x = 0
     th = 0
@@ -159,11 +162,15 @@ if __name__=="__main__":
             else:
                 control_turn = target_turn
 
-            twist = Twist()
-            twist.linear.x = control_speed; twist.linear.y = 0; twist.linear.z = 0
-            twist.angular.x = 0; twist.angular.y = 0; twist.angular.z = control_turn
-            pub.publish(twist)
+            #twist = Twist()
+            #twist.linear.x = control_speed; twist.linear.y = 0; twist.linear.z = 0
+            #twist.angular.x = 0; twist.angular.y = 0; twist.angular.z = control_turn
+            #pub.publish(twist)
             #does it need a time.sleep(1)
+
+            message["linx"] = control_speed ; message["liny"]= 0; message["linz"]= 0
+            message["angx"] = 0; message["angy"] = 0; message["angz"] = control_turn
+            pub.publish(message)
 
             #print("loop: {0}".format(count))
             #print("target: vx: {0}, wz: {1}".format(target_speed, target_turn))
@@ -173,10 +180,20 @@ if __name__=="__main__":
         print(e)
 
     finally:
-        twist = Twist()
-        twist.linear.x = 0; twist.linear.y = 0; twist.linear.z = 0
-        twist.angular.x = 0; twist.angular.y = 0; twist.angular.z = 0
-        pub.publish(twist)
+        #twist = Twist()
+        #twist.linear.x = 0; twist.linear.y = 0; twist.linear.z = 0
+        #twist.angular.x = 0; twist.angular.y = 0; twist.angular.z = 0
+
+        message["linx"] = 0 ; message["liny"]= 0; message["linz"]= 0
+        message["angx"] = 0; message["angy"] = 0; message["angz"] = 0
+
+        
+        #print(twist)
+        #pub.publish(twist)
+
+        print(message)
+        pub.publish(message)
+
 
     termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
 
