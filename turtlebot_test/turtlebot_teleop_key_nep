@@ -101,7 +101,7 @@ if __name__=="__main__":
 
     node = nep.node("turtlebot_teleop","ROS")
     conf = node.hybrid(IP) 
-    pub = node.new_pub("~cmd_vel",msg_type,conf) #error here ...
+    pub = node.new_pub("cmd_vel_mux",msg_type,conf)
 
     message = {}
 
