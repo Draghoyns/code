@@ -1,40 +1,8 @@
 #!/usr/bin/env python
 
-# is it also supposed to be in a certain directory / workspace or whatever ??? idk
-
-# Copyright (c) 2011, Willow Garage, Inc.
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-#    * Redistributions of source code must retain the above copyright
-#      notice, this list of conditions and the following disclaimer.
-#    * Redistributions in binary form must reproduce the above copyright
-#      notice, this list of conditions and the following disclaimer in the
-#      documentation and/or other materials provided with the distribution.
-#    * Neither the name of the Willow Garage, Inc. nor the names of its
-#      contributors may be used to endorse or promote products derived from
-#       this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
-
-import rospy
 from geometry_msgs.msg import Twist
 import nep
 import time
-
-import sys, select, termios, tty
 
 IP = "10.105.95.233"  # IP of the remote PC
 msg_type = "dictionary"
@@ -52,8 +20,6 @@ w/x : increase/decrease only linear speed by 10%
 e/c : increase/decrease only angular speed by 10%
 space key, k : force stop
 anything else : stop smoothly
-
-CTRL-C to quit
 """
 
 moveBindings = {
@@ -78,14 +44,7 @@ speedBindings = {
 
 
 def getKey():
-    tty.setraw(sys.stdin.fileno())
-    rlist, _, _ = select.select([sys.stdin], [], [], 0.1)
-    if rlist:
-        key = sys.stdin.read(1)
-    else:
-        key = ""
-
-    termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
+    # TODO
     return key
 
 
@@ -98,14 +57,11 @@ def vels(speed, turn):
 
 
 if __name__ == "__main__":
-    settings = termios.tcgetattr(sys.stdin)
 
-    # rospy.init_node('turtlebot_teleop')
-    # pub = rospy.Publisher('~cmd_vel', Twist, queue_size=5)
-
-    node = nep.node("turtlebot_teleop", "ROS")
+    # create the nep publisher
+    node = nep.node("turtlebot_teleop")
     conf = node.hybrid(IP)
-    pub = node.new_pub("cmd_vel_mux", msg_type, conf)
+    pub = node.new_pub("velo", msg_type, conf)
 
     message = {}
 
@@ -166,12 +122,6 @@ if __name__ == "__main__":
             else:
                 control_turn = target_turn
 
-            # twist = Twist()
-            # twist.linear.x = control_speed; twist.linear.y = 0; twist.linear.z = 0
-            # twist.angular.x = 0; twist.angular.y = 0; twist.angular.z = control_turn
-            # pub.publish(twist)
-            # does it need a time.sleep(1)
-
             message["linx"] = control_speed
             message["liny"] = 0
             message["linz"] = 0
@@ -180,17 +130,10 @@ if __name__ == "__main__":
             message["angz"] = control_turn
             pub.publish(message)
 
-            # print("loop: {0}".format(count))
-            # print("target: vx: {0}, wz: {1}".format(target_speed, target_turn))
-            # print("published: vx: {0}, wz: {1}".format(twist.linear.x, twist.angular.z))
-
     except Exception as e:
         print(e)
 
     finally:
-        # twist = Twist()
-        # twist.linear.x = 0; twist.linear.y = 0; twist.linear.z = 0
-        # twist.angular.x = 0; twist.angular.y = 0; twist.angular.z = 0
 
         message["linx"] = 0
         message["liny"] = 0
@@ -199,10 +142,5 @@ if __name__ == "__main__":
         message["angy"] = 0
         message["angz"] = 0
 
-        # print(twist)
-        # pub.publish(twist)
-
         print(message)
         pub.publish(message)
-
-    termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
