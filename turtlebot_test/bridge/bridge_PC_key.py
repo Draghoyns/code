@@ -49,11 +49,12 @@ def getKey():
     rlist, _, _ = select.select([sys.stdin], [], [], 0.1)
     if rlist:
         key = sys.stdin.read(1)
+        sys.stdout.write(key)
+
     else:
         key = ""
 
     termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
-    print(key)
     return key
 
 
