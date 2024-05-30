@@ -3,12 +3,13 @@
 from geometry_msgs.msg import Twist
 import nep
 import time
+import sys, select, termios, tty
+
 
 IP = "10.105.95.233"  # IP of the remote PC
 msg_type = "dictionary"
 
 msg = """
-Control Your Turtlebot!
 ---------------------------
 Moving around:
    u    i    o
@@ -44,7 +45,15 @@ speedBindings = {
 
 
 def getKey():
-    # TODO
+    tty.setraw(sys.stdin.fileno())
+    rlist, _, _ = select.select([sys.stdin], [], [], 0.1)
+    if rlist:
+        key = sys.stdin.read(1)
+    else:
+        key = ""
+
+    termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
+    print(key)
     return key
 
 
@@ -57,6 +66,8 @@ def vels(speed, turn):
 
 
 if __name__ == "__main__":
+
+    settings = termios.tcgetattr(sys.stdin)
 
     # create the nep publisher
     node = nep.node("turtlebot_teleop")
@@ -144,3 +155,5 @@ if __name__ == "__main__":
 
         print(message)
         pub.publish(message)
+
+    termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
